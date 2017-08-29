@@ -1,12 +1,14 @@
 package main
 
 import (
-	"net/http"
 	"bytes"
-	"net/url"
 	"fmt"
-    "io/ioutil"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 )
+
+var authToken = ""
 
 func main() {
 	fmt.Println("Hello world!")
@@ -21,27 +23,29 @@ func main() {
 	payload.Set("os_type", "android")
 	payload.Set("app_version", "0.3.6")
 
-
 	client := http.Client{}
 	r, _ := http.NewRequest(http.MethodPost, apiUrl, bytes.NewBufferString(payload.Encode()))
-    r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, _ := client.Do(r)
-    fmt.Println(resp.Status)
-    body, _ := ioutil.ReadAll(resp.Body)
-    fmt.Println(string(body))
-    fmt.Println(resp.Header)
+	fmt.Println(resp.Status)
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
+	fmt.Println(resp.Header)
 
-    authtoken := resp.Header["Ssbulsatapi"][0]
+	authtoken := resp.Header["Ssbulsatapi"][0]
+	fmt.Println(authtoken)
+
+	// GET
+	r, _ = http.NewRequest(http.MethodGet, "https://api.iptv.bulsat.com/tv/full/live", nil)
+	r.Header.Add("SSBULSATAPI", authtoken)
+
+	resp, _ = client.Do(r)
+	fmt.Println(resp.Status)
+	//TODO: Handle JSON Response...
+	data, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(data))
     fmt.Println(authtoken)
 
-    // GET
-    r, _ = http.NewRequest(http.MethodGet, "https://api.iptv.bulsat.com/tv/full/live", nil)
-    r.Header.Add("SSBULSATAPI", authtoken)
-
-    resp, _ = client.Do(r)
-    fmt.Println(resp.Status)
-    //TODO: Handle JSON Response...
 
 }
