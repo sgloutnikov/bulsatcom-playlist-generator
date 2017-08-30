@@ -1,0 +1,7 @@
+[login]
+username = "your@email.com"
+passwordHash = ""
+
+[playlist]
+# Path and filename to the generated playlist. ./ is the current directory
+path = "./bulsatcom.m3u8"

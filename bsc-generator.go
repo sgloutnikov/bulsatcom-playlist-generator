@@ -6,28 +6,32 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"./modal"
+	"./model"
 	"log"
 	"encoding/json"
 	"os"
 	"bufio"
+	"github.com/spf13/viper"
 )
 
 var authToken = ""
 
 func main() {
-	fmt.Println("Generating playlist in bulsatcom.m3u8")
+    viper.SetConfigName("config")
+    viper.AddConfigPath(".")
+    err := viper.ReadInConfig()
+    check(err)
+    fmt.Println("Generating playlist in " + viper.GetString("playlist.path"))
 
-	login()
-	channels := getChannel()
-	generatePlaylist(channels)
+    login(viper.GetString("login.username"), viper.GetString("login.passwordHash"))
+    channels := getChannel()
+    generatePlaylist(viper.GetString("playlist.path"), channels)
 
-	fmt.Println(authToken)
+    fmt.Println(authToken)
 }
 
-func generatePlaylist(channels modal.BSCChannels) {
-	//TODO: Make output location configurable
-	file, err := os.Create("bulsatcom.m3u8")
+func generatePlaylist(path string, channels model.BSCChannels) {
+	file, err := os.Create(path)
 	check(err)
 	defer file.Close()
 	writer := bufio.NewWriter(file)
@@ -56,8 +60,8 @@ func generatePlaylist(channels modal.BSCChannels) {
 	writer.Flush()
 }
 
-func getChannel() modal.BSCChannels {
-	myChannels := modal.BSCChannels{}
+func getChannel() model.BSCChannels {
+	myChannels := model.BSCChannels{}
 	request, _ := http.NewRequest(http.MethodGet, "https://api.iptv.bulsat.com/tv/full/live", nil)
 	request.Header.Add("SSBULSATAPI", authToken)
 	client := http.Client{}
@@ -66,13 +70,6 @@ func getChannel() modal.BSCChannels {
 	body, _ := ioutil.ReadAll(response.Body)
 	json.Unmarshal(body, &myChannels)
 
-	/*
-	//For local Testing. Remove Later.
-	dat, _ := ioutil.ReadFile("sampleResponse.json")
-	myChannels := modal.BSCChannels{}
-	json.Unmarshal(dat, &myChannels)
-	*/
-
 	//Follow redirect urls to get direct url (Some players have problems with indirect links)
 	totalChannels := len(myChannels)
 	fmt.Printf("Found %d channels.\n", totalChannels)
@@ -80,19 +77,18 @@ func getChannel() modal.BSCChannels {
 		fmt.Printf("[%d of %d] Getting direct URL for %s.\n", i+1, totalChannels, myChannels[i].Title)
 		request, _ = http.NewRequest(http.MethodGet, myChannels[i].Sources, nil)
 		response, _ = client.Do(request)
-		modal.SetSourcesUrl(response.Request.URL.String(), &myChannels[i])
+		model.SetSourcesUrl(response.Request.URL.String(), &myChannels[i])
 	}
 
 	return myChannels
 }
 
-func login() bool {
+func login(user, passHash string) bool {
 	apiUrl := "https://api.iptv.bulsat.com/?auth"
 
-	//TODO: Read from config file
 	payload := url.Values{}
-	payload.Set("user", "")
-	payload.Set("pass", "")
+	payload.Set("user", user)
+	payload.Set("pass", passHash)
 	payload.Set("device_id", "123000001")
 	payload.Set("device_name", "bscgen1")
 	payload.Set("os_version", "1.0")
@@ -107,7 +103,7 @@ func login() bool {
 	body, err := ioutil.ReadAll(response.Body)
 	check(err)
 	authToken = response.Header["Ssbulsatapi"][0]
-	logged := modal.BSCLogin{}
+	logged := model.BSCLogin{}
 	err = json.Unmarshal(body, &logged)
 	check(err)
 	return logged.Logged == "true"

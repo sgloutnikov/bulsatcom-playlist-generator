@@ -1,4 +1,4 @@
-package modal
+package model
 
 type BSC struct {
 	Channel  string `json:"channel"`
