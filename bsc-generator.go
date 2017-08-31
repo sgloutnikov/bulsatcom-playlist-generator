@@ -27,7 +27,7 @@ func main() {
     channels := getChannel()
     generatePlaylist(viper.GetString("playlist.path"), channels)
 
-    fmt.Println(authToken)
+    //fmt.Println(authToken)
 }
 
 func generatePlaylist(path string, channels model.BSCChannels) {
