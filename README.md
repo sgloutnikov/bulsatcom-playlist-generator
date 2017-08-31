@@ -25,4 +25,4 @@ the Fire TV App project. **Be sure to have the Java Unlimited Strength Jurisdict
 
 
 ##### TODO
-* Handle the password hash internally automatically.
+* Handle the password hash automatically.
