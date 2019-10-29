@@ -17,7 +17,9 @@ Example of integration with Perfect Player:
 
 * Download the compiled version from releases or build from source. The project is written entirely in Go.
 * Generate your password hash using this [jar](https://github.com/sgloutnikov/bulsatcom-firetv/raw/master/bscEncrypt.jar) from
-the Fire TV App project: `java -jar bscEncrypt.jar "username" "password"` **Be sure to have the Java Unlimited Strength Jurisdiction Policy Files installed**
+the Fire TV App project: `java -jar bscEncrypt.jar "username" "password"` (Note: quotes around username and password in case of special characters.)
+
+**Be sure to have the Java Unlimited Strength Jurisdiction Policy Files installed**
 * Edit `config.toml` accordingly and run bsc-generator.
 * Use the generated bulsatcom.m3u8 playlist in your favorite player.
 
